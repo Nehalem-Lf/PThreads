@@ -1,0 +1,14 @@
+meanpwr
+pthreads
+xu3log
+
+*.o
+*.csv
+*.log
+idle.txt
+
+amd/
+bal/
+gus/
+guspar/
+
