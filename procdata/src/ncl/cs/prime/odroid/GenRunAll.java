@@ -2,7 +2,7 @@ package ncl.cs.prime.odroid;
 
 public class GenRunAll {
 
-	private static interface WorkloadOption {
+	public static interface WorkloadOption {
 		public String name();
 		public String get(double p, int m, int na7, int na15);
 	};
