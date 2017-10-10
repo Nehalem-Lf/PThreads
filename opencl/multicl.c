@@ -127,37 +127,28 @@ void m_arg_long(int m, dev_context contexts[], int arg_index, long values[]) {
 	}
 }
 
-void start_kernel_work(dev_context context, size_t work_size, int n) {
+void start_kernel(dev_context context, size_t work_size, int n) {
 	if(work_size>0 && n>0)
 		clEnqueueNDRangeKernel(context->queue, context->kernel, 1, NULL, &n, &work_size, 0, NULL, NULL);
-}
-
-void start_kernel(dev_context context, int n) {
-	if(context->work_size>0 && n>0)
-		clEnqueueNDRangeKernel(context->queue, context->kernel, 1, NULL, &n, &context->work_size, 0, NULL, NULL);
 }
 
 void m_start_kernel(int m, dev_context contexts[], int n[]) {
 	int i;
 	for(i = 0; i < m; i++) {
-		start_kernel(contexts[i], n[i]);
+		start_kernel(contexts[i], contexts[i]->work_size, n[i]);
 	}
 }
 
-void finish_work(dev_context context, size_t work_size, int n) {
-	if(work_size>0 && n>0)
+void finish(dev_context context, size_t work_size, int n) {
+	if(work_size>0 && n>0) {
 		clFinish(context->queue);
-}
-
-void finish(dev_context context, int n) {
-	if(context->work_size>0 && n>0)
-		clFinish(context->queue);
+	}
 }
 
 void m_finish(int m, dev_context contexts[], int n[]) {
 	int i;
 	for(i = 0; i < m; i++) {
-		finish(contexts[i], n[i]);
+		finish(contexts[i], contexts[i]->work_size, n[i]);
 	}
 }
 

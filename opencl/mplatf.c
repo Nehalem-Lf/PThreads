@@ -2,7 +2,14 @@
 #include <time.h>
 #include "multicl.h"
 
+#define NDEVS 3
+const char *dev_names[] = {"Intel(R) OpenCL", "Intel(R) OpenCL", "NVIDIA_CUDA"};
+const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_GPU};
+const int max_n[] = {1, 512, 1024};
+
 int verbose = 0;
+
+//--------------------------------- time profiling -----------------------------------
 
 double get_time() {
 	return (double)clock() / (double)CLOCKS_PER_SEC;
@@ -16,9 +23,9 @@ void print_time(double t, const char* caption) {
 	printf("%s:\t%d\n", caption, (int)(t*1000.0));
 }
 
-//--------------------------------- main -----------------------------------
+//--------------------------------- kernel code -----------------------------------
 
-const char *kernelSource_sqrt = "\n" \
+const char *kernel_source_sqrt = "\n" \
 "__kernel void task(const int n, const int k, __global float *out) \n" \
 "{ \n" \
 "    int id = get_global_id(0); \n" \
@@ -35,7 +42,7 @@ const char *kernelSource_sqrt = "\n" \
 "} \n" \
 "\n";
 
-const char *kernelSource_float = "\n" \
+const char *kernel_source_float = "\n" \
 "__kernel void task(const int n, const int k, __global float *out) \n" \
 "{ \n" \
 "    int id = get_global_id(0); \n" \
@@ -52,7 +59,7 @@ const char *kernelSource_float = "\n" \
 "} \n" \
 "\n";
 
-const char *kernelSource_int = "\n" \
+const char *kernel_source_int = "\n" \
 "__kernel void task(const int n, const int k, __global float *out) \n" \
 "{ \n" \
 "    int id = get_global_id(0); \n" \
@@ -69,7 +76,7 @@ const char *kernelSource_int = "\n" \
 "} \n" \
 "\n";
 
-const char *kernelSource_long = "\n" \
+const char *kernel_source_long = "\n" \
 "__kernel void task(const int n, const int k, __global float *out) \n" \
 "{ \n" \
 "    int id = get_global_id(0); \n" \
@@ -87,7 +94,7 @@ const char *kernelSource_long = "\n" \
 "} \n" \
 "\n";
 
-const char *kernelSource_log = "\n" \
+const char *kernel_source_log = "\n" \
 "__kernel void task(const int n, const int k, __global float *out) \n" \
 "{ \n" \
 "    int id = get_global_id(0); \n" \
@@ -104,6 +111,8 @@ const char *kernelSource_log = "\n" \
 "} \n" \
 "\n";
 
+//--------------------------------- kernel scheduling -----------------------------------
+
 double do_seq_task(dev_context contexts[], int dev, int k, float* h_out) {
 	double exec_time;
 
@@ -115,10 +124,10 @@ double do_seq_task(dev_context contexts[], int dev, int k, float* h_out) {
 
 	// start
 	double time = get_time();
-	start_kernel_work(contexts[dev], 1, n);
+	start_kernel(contexts[dev], 1, n);
 
 	// wait until finished and get result
-	finish_work(contexts[dev], 1, n);
+	finish(contexts[dev], 1, n);
 	exec_time = profile_time(time);
 	get_result(contexts[dev], 0, 1, d_out, h_out);
 
@@ -129,6 +138,8 @@ double do_seq_task(dev_context contexts[], int dev, int k, float* h_out) {
 }
 
 double do_par_task(int m, dev_context contexts[], int n[], int k[], float* h_out) {
+	double exec_time;
+
 	// pass arguments
 	m_arg_int(m, contexts, 0, n);
 	m_arg_int(m, contexts, 1, k);
@@ -140,7 +151,7 @@ double do_par_task(int m, dev_context contexts[], int n[], int k[], float* h_out
 
 	// wait until finished and get result
 	m_finish(m, contexts, n);
-	double exec_time = profile_time(time);
+	exec_time = profile_time(time);
 	m_get_result(m, contexts, n, d_out, h_out);
 
 	// release arguments
@@ -149,17 +160,23 @@ double do_par_task(int m, dev_context contexts[], int n[], int k[], float* h_out
 	return exec_time;
 }
 
-int main(int argc, char* argv[]) {
-	const char *kernelSources[] = {kernelSource_sqrt, kernelSource_int, kernelSource_log, kernelSource_float};
-	const char *kernelSource = kernelSources[0];
-	const int max_n[] = { 1, 512, 1024 };
+//--------------------------------- main -----------------------------------
 
+int main(int argc, char* argv[]) {
+	const char *kernel_sources[] = {kernel_source_sqrt, kernel_source_int, kernel_source_log, kernel_source_float};
+	const char *kernel_source = kernel_sources[0];
+
+	int i;
 	int n_total;
-	int n[] = { 0, 0, 0 };
+	int n[NDEVS];
+	for(i=0; i<NDEVS; i++)
+		n[i] = 0;
 	int seq_dev = 0;
 	int dev;
 
-	int k[] = { 0, 0, 0 };
+	int k[NDEVS];
+	for(i=0; i<NDEVS; i++)
+		k[i] = 0;
 	int k_seq = 0;
 
 	int mode = 0;
@@ -169,7 +186,6 @@ int main(int argc, char* argv[]) {
 	float adjust = 1.0;
 	int balanced = 0;
 
-	int i;
 	int opt_err = 0;
 	for(i=1; i<argc && !opt_err; i++) {
 		if(argv[i][0]=='-') {
@@ -183,7 +199,7 @@ int main(int argc, char* argv[]) {
 				case 'm':
 					mode = argv[++i][0] - '0';
 					if(mode>=0 && mode<4) {
-						kernelSource = kernelSources[mode];
+						kernel_source = kernel_sources[mode];
 					}
 					else {
 						fprintf(stderr, "Unknown mode: %d\n", mode);
@@ -204,14 +220,14 @@ int main(int argc, char* argv[]) {
 					break;
 				case 'z':
 					seq_dev = argv[++i][0] - '0';
-					if(seq_dev<0 || seq_dev>2) {
+					if(seq_dev<0 || seq_dev>=NDEVS) {
 						fprintf(stderr, "Unknown device: %d\n", seq_dev);
 						exit(1);
 					}
 					break;
 				case 'n':
 					dev = argv[i][2] - '0';
-					if(dev<0 || dev>2) {
+					if(dev<0 || dev>=NDEVS) {
 						fprintf(stderr, "Unknown device: %d\n", dev);
 						exit(1);
 					}
@@ -229,7 +245,9 @@ int main(int argc, char* argv[]) {
 			opt_err = 1;
 		}
 	}
-	n_total = n[0]+n[1]+n[2];
+	n_total = 0;
+	for(i=0; i<NDEVS; i++)
+		n_total += n[i];
 	if(n_total<=0) {
 		fprintf(stderr, "No parallel cores\n");
 		opt_err = 1;
@@ -262,22 +280,21 @@ int main(int argc, char* argv[]) {
 	else {
 		printf("--equal share\n");
 		int k_par = (int)(ktotal*p*adjust);
-		for(dev=0; dev < 3; dev++)
-			k[dev] = k_par;
+		for(i=0; i<NDEVS; i++)
+			k[i] = k_par;
 	}
 
 	size_t bytes = n_total * sizeof(float);
 	float* h_out = (float*)malloc(bytes);
 
 	// init devices
-	dev_context contexts[3];
-	contexts[0] = create_context(find_platform("Intel(R) OpenCL"), CL_DEVICE_TYPE_CPU, n[0]);
-	contexts[1] = create_context(find_platform("Intel(R) OpenCL"), CL_DEVICE_TYPE_GPU, n[1]);
-	contexts[2] = create_context(find_platform("NVIDIA_CUDA"), CL_DEVICE_TYPE_GPU, n[2]);
+	dev_context contexts[NDEVS];
+	for(i=0; i<NDEVS; i++)
+		contexts[i] = create_context(find_platform(dev_names[i]), dev_types[i], n[i]);
 
 	// create program and kernel
 	int id;
-	if((id = m_create_kernel(3, contexts, kernelSource, "task"))>=0) {
+	if((id = m_create_kernel(NDEVS, contexts, kernel_source, "task"))>=0) {
 		char log[2048];
 		clGetProgramBuildInfo(contexts[id]->program, contexts[id]->device, CL_PROGRAM_BUILD_LOG, 2048, log, NULL);
 		printf("*error: Kernel build error.\n");
@@ -290,7 +307,7 @@ int main(int argc, char* argv[]) {
 	double avet_seq = 0;
 	for(i=0; i<repeat; i++) {
 		double t;
-		t = do_par_task(3, contexts, n, k, h_out);
+		t = do_par_task(NDEVS, contexts, n, k, h_out);
 		if(i>0)
 			avet_par += t;
 		if(verbose) {
@@ -341,6 +358,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	// release resources
-	m_release(3, contexts);
+	m_release(NDEVS, contexts);
 	return 0;
 }
