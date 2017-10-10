@@ -29,7 +29,7 @@ dev_context create_context(cl_platform_id platform, cl_device_type device_type, 
 
 	// create opencl context and queue
 	context->context = clCreateContext(0, 1, &context->device, NULL, NULL, &err);
-	context->queue = clCreateCommandQueue(context->context, context->device, 0, &err);
+	context->queue = clCreateCommandQueue(context->context, context->device, CL_QUEUE_PROFILING_ENABLE, &err);
 	context->work_size = work_size;
 	return context;
 }
@@ -129,7 +129,7 @@ void m_arg_long(int m, dev_context contexts[], int arg_index, long values[]) {
 
 void start_kernel(dev_context context, size_t work_size, int n) {
 	if(work_size>0 && n>0)
-		clEnqueueNDRangeKernel(context->queue, context->kernel, 1, NULL, &n, &work_size, 0, NULL, NULL);
+		clEnqueueNDRangeKernel(context->queue, context->kernel, 1, NULL, &n, &work_size, 0, NULL, &context->event);
 }
 
 void m_start_kernel(int m, dev_context contexts[], int n[]) {
@@ -142,6 +142,7 @@ void m_start_kernel(int m, dev_context contexts[], int n[]) {
 void finish(dev_context context, size_t work_size, int n) {
 	if(work_size>0 && n>0) {
 		clFinish(context->queue);
+		clWaitForEvents(1, &context->event);
 	}
 }
 
@@ -150,6 +151,31 @@ void m_finish(int m, dev_context contexts[], int n[]) {
 	for(i = 0; i < m; i++) {
 		finish(contexts[i], contexts[i]->work_size, n[i]);
 	}
+}
+
+double kernel_time(dev_context context, size_t work_size, int n) {
+	if(work_size>0 && n>0) {
+		cl_ulong time_start, time_end, exec_time;
+		double total_time;
+		clGetEventProfilingInfo(context->event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
+		clGetEventProfilingInfo(context->event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
+		exec_time = time_end - time_start;
+		return ((double)((unsigned long)exec_time)) / 1E9;
+	}
+	else {
+		return 0.0;
+	}
+}
+
+double m_kernel_time(int m, dev_context contexts[], int n[]) {
+	double max = 0.0;
+	int i;
+	for(i = 0; i < m; i++) {
+		double t = kernel_time(contexts[i], contexts[i]->work_size, n[i]);
+		if(t>max)
+			max = t;
+	}
+	return max;
 }
 
 void m_release_mem(int m, cl_mem* d_x) {

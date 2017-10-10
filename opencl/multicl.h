@@ -13,6 +13,7 @@ typedef struct _dev_context {
 	cl_command_queue queue;
 	cl_program program;
 	cl_kernel kernel;
+	cl_event event;
 	size_t work_size;
 };
 typedef struct _dev_context* dev_context;

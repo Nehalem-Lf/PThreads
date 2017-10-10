@@ -6,6 +6,7 @@
 const char *dev_names[] = {"Intel(R) OpenCL", "Intel(R) OpenCL", "NVIDIA_CUDA"};
 const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_GPU};
 const int max_n[] = {1, 512, 1024};
+const double boost[] = {100.0, 1.0, 1.0};
 
 int verbose = 0;
 
@@ -20,7 +21,7 @@ double profile_time(double prev) {
 }
 
 void print_time(double t, const char* caption) {
-	printf("%s:\t%d\n", caption, (int)(t*1000.0));
+	printf("%s:\t%.5f\n", caption, t*1000.0);
 }
 
 //--------------------------------- kernel code -----------------------------------
@@ -128,7 +129,8 @@ double do_seq_task(dev_context contexts[], int dev, int k, float* h_out) {
 
 	// wait until finished and get result
 	finish(contexts[dev], 1, n);
-	exec_time = profile_time(time);
+	//exec_time = profile_time(time);
+	exec_time = kernel_time(contexts[dev], 1, n);
 	get_result(contexts[dev], 0, 1, d_out, h_out);
 
 	// release arguments
@@ -151,7 +153,8 @@ double do_par_task(int m, dev_context contexts[], int n[], int k[], float* h_out
 
 	// wait until finished and get result
 	m_finish(m, contexts, n);
-	exec_time = profile_time(time);
+	//exec_time = profile_time(time);
+	exec_time = m_kernel_time(m, contexts, n);
 	m_get_result(m, contexts, n, d_out, h_out);
 
 	// release arguments
@@ -257,7 +260,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	k_seq = (int)(ktotal*(1.0-p));
+	k_seq = (int)(ktotal*(1.0-p) / boost[seq_dev]);
 	printf("%d threads...\n", n_total);
 
 	if(balanced) {
@@ -279,9 +282,9 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		printf("--equal share\n");
-		int k_par = (int)(ktotal*p*adjust);
+		double k_par = ktotal*p*adjust;
 		for(i=0; i<NDEVS; i++)
-			k[i] = k_par;
+			k[i] = (int)(k_par / boost[i]);
 	}
 
 	size_t bytes = n_total * sizeof(float);
