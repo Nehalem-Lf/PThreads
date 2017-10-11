@@ -70,7 +70,7 @@ public class GenRunAllCL {
 	}
 	
 	public static void main(String[] args) {
-		System.out.printf("REM %s, %s\nREM b m w j p z n0 n1 n2\r\n",
+		System.out.printf("REM %s, %s\nREM b m w j p z n0 n1 n2\n@ECHO OFF\n",
 				WORKLOAD.name(), BALANCED ? "balanced" : "equal-share");
 		int count = 0;
 		for(m=0; m<MODE_NAMES.length; m++) {
@@ -105,7 +105,7 @@ public class GenRunAllCL {
 							
 							String opt = WORKLOAD.get(p, m, n0, n1, n2);
 							
-							System.out.printf("run.bat %d %d %s %d %d %d %d\n", BALANCED ? 1 : 0, m,
+							System.out.printf("CALL run.bat %d %d %s %d %d %d %d\n", BALANCED ? 1 : 0, m,
 									opt, z, n0, n1, n2);
 							count++;
 						}

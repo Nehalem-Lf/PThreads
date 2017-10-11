@@ -6,7 +6,7 @@
 const char *dev_names[] = {"Intel(R) OpenCL", "Intel(R) OpenCL", "NVIDIA_CUDA"};
 const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_GPU};
 const int max_n[] = {1, 512, 1024};
-const double boost[] = {100.0, 1.0, 1.0};
+const double boost[] = {1000.0, 1.0, 1.0};
 
 int verbose = 0;
 
@@ -129,8 +129,9 @@ double do_seq_task(dev_context contexts[], int dev, int k, float* h_out) {
 
 	// wait until finished and get result
 	finish(contexts[dev], 1, n);
-	//exec_time = profile_time(time);
-	exec_time = kernel_time(contexts[dev], 1, n);
+	exec_time = profile_time(time);
+	if(exec_time<3.2)
+		exec_time = kernel_time(contexts[dev], 1, n);
 	get_result(contexts[dev], 0, 1, d_out, h_out);
 
 	// release arguments
@@ -153,8 +154,9 @@ double do_par_task(int m, dev_context contexts[], int n[], int k[], float* h_out
 
 	// wait until finished and get result
 	m_finish(m, contexts, n);
-	//exec_time = profile_time(time);
-	exec_time = m_kernel_time(m, contexts, n);
+	exec_time = profile_time(time);
+	if(exec_time<3.2)
+		exec_time = m_kernel_time(m, contexts, n);
 	m_get_result(m, contexts, n, d_out, h_out);
 
 	// release arguments
