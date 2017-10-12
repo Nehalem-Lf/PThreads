@@ -1,4 +1,4 @@
-package ncl.cs.prime.odroid;
+package ncl.cs.prime.opencl;
 
 public class GenRunAllCL {
 
@@ -43,8 +43,8 @@ public class GenRunAllCL {
 	// Experiment options:
 	public static final WorkloadOption WORKLOAD = AMDAHL;
 	public static final boolean BALANCED = false;
-	public static final double[] P = {0.3, 0.9};
-	public static final int BASE_W = 4000000;
+	public static final double[] P = {0.9}; //{0.3, 0.9};
+	public static final int BASE_W = 40960000;
 	
 	public static final double[][] ALPHA = {
 		{49.52, 49.52, 49.52, 49.52},
@@ -54,17 +54,18 @@ public class GenRunAllCL {
 	};
 	public static int[][] CORE_SETUP = {
 		{0, 1},
-		{0, 8, 64, 512},
-		{0, 16, 128, 1024}
+		{0, 8, 64, 256},
+		{0, 8, 64, 256, 1024}
 	};
 
 	public static final String[] MODE_NAMES = {"sqrt"}; // , "int", "log", "float"};
 	
-	private static int m, z, n0, n1, n2;
+	private static int m, z;
+	private static int[] n = new int[3];
 	private static double p, alphaMin, alphaS;
 	
 	private static double getAlpha(int dev, int m) {
-		if(dev==1 && n1>8)
+		if(dev==1 && n[1]>8)
 			dev = 3;
 		return ALPHA[dev][m];
 	}
@@ -80,33 +81,29 @@ public class GenRunAllCL {
 				for(z=0; z<3; z++) {
 					for(int d1=0; d1<CORE_SETUP[1].length; d1++)
 						for(int d2=0; d2<CORE_SETUP[2].length; d2++) {
-							n1 = CORE_SETUP[1][d1];
-							n2 = CORE_SETUP[2][d2];
+							n[0] = 0;
+							n[1] = CORE_SETUP[1][d1];
+							n[2] = CORE_SETUP[2][d2];
 							
-							n0 = 0;
-							if(n1==0 && n2==0) {
-								if(z==0)
-									n0 = 1;
-								else
-									continue;
-							}
-							if(z==1 && n1==0)
+							if(n[1]==0 && n[2]==0)
+								n[z] = 1;
+							if(z==1 && n[1]==0)
 								continue;
-							if(z==2 && n2==0)
+							if(z==2 && n[2]==0)
 								continue;
 							
-							if(n0>0)
+							if(n[0]>0)
 								alphaMin = getAlpha(0, m);
-							if(n1>0)
+							if(n[1]>0)
 								alphaMin = Math.min(getAlpha(1, m), alphaMin);
-							if(n2>0)
+							if(n[2]>0)
 								alphaMin = Math.min(getAlpha(2, m), alphaMin);
 							alphaS = ALPHA[z][m];
 							
-							String opt = WORKLOAD.get(p, m, n0, n1, n2);
+							String opt = WORKLOAD.get(p, m, n[0], n[1], n[2]);
 							
-							System.out.printf("CALL run.bat %d %d %s %d %d %d %d\n", BALANCED ? 1 : 0, m,
-									opt, z, n0, n1, n2);
+							System.out.printf("CALL run.bat %s %d %s %d %d %d %d\n", BALANCED ? "b" : "eq", m,
+									opt, z, n[0], n[1], n[2]);
 							count++;
 						}
 				}
