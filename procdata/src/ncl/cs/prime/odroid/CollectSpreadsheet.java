@@ -3,7 +3,8 @@ package ncl.cs.prime.odroid;
 import java.io.IOException;
 
 import ncl.cs.prime.odroid.CollectTimes.BenchmarkResult;
-import ncl.cs.prime.odroid.SpreadsheetGenerator.CellStyle;
+import ncl.cs.prime.oxml.SpreadsheetGenerator;
+import ncl.cs.prime.oxml.SpreadsheetGenerator.CellStyle;
 
 public class CollectSpreadsheet {
 

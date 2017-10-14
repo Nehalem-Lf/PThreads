@@ -6,7 +6,7 @@
 const char *dev_names[] = {"Intel(R) OpenCL", "Intel(R) OpenCL", "NVIDIA_CUDA"};
 const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_GPU};
 const int max_n[] = {1, 512, 1024};
-const double boost[] = {1000.0, 1.0, 1.0};
+const double boost[][NDEVS] = {{250.0, 1.0, 1.0}, {25.0, 1.0, 1.0}, {2.5, 1.0, 1.0}, {25.0, 1.0, 1.0}};
 
 int verbose = 0;
 
@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	k_seq = (int)(ktotal*(1.0-p) / boost[seq_dev]);
+	k_seq = (int)(ktotal*(1.0-p) / boost[mode][seq_dev]);
 	printf("%d threads...\n", n_total);
 
 	if(balanced) {
@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
 		printf("--equal share\n");
 		double k_par = ktotal*p*adjust;
 		for(i=0; i<NDEVS; i++)
-			k[i] = (int)(k_par / boost[i]);
+			k[i] = (int)(k_par / boost[mode][i]);
 	}
 
 	size_t bytes = n_total * sizeof(float);
