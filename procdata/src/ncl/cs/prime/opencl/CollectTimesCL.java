@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class CollectTimesCL {
 
 	public static final String PATH = "../opencl/results";
-	public static final String SRC = PATH+"/multicl_amd2.log";
+	public static final String SRC = PATH+"/171015/multicl_amd_int9a.log";
 	
 	public static final String[] M = {"sqrt", "int", "log", "float"};
 	
@@ -17,6 +17,7 @@ public class CollectTimesCL {
 	
 	public static class BenchmarkResult {
 		public int m;
+		public int w;
 		public double p;
 		public int z;
 		public int[] n = new int[3];
@@ -44,6 +45,9 @@ public class CollectTimesCL {
 					switch(s[i].charAt(0)) {
 						case 'm':
 							res.m = Integer.parseInt(getV(s[i]));
+							break;
+						case 'w':
+							res.w = Integer.parseInt(getV(s[i]));
 							break;
 						case 'p':
 							res.p = Double.parseDouble(getV(s[i]));
