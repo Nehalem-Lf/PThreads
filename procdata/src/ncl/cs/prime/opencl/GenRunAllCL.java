@@ -43,22 +43,29 @@ public class GenRunAllCL {
 	// Experiment options:
 	public static final WorkloadOption WORKLOAD = AMDAHL;
 	public static final boolean BALANCED = false;
-	public static final double[] P = {0.9}; //{0.3, 0.9};
-	public static final int BASE_W = 40960000;
+	public static final double[] P = {0.9, 0.3};
 	
-	public static final double[][] ALPHA = {
-		{49.52, 49.52, 49.52, 49.52},
-		{1.0, 1.0, 1.0, 1.0},
-		{14.954, 14.954, 14.954, 14.954},
-		{0.7674, 0.7674, 0.7674, 0.7674} // Intel GPU special case (n>8)
+	public static final int BASE_W = 4096000;
+	// amd sqrt: 40960000
+	// amd int: 81920000
+	// amd log: (p=0.9) 5120000; (p=0.3, 0.9) 40960000
+	// gus sqrt: 4096000
+	
+	public static double[][] ALPHA = {
+		{24.3514350982078, 1.0, 14.9801660268563, 0.768866737195047},
+		{40.667109080911, 1.0, 7.88676615499091, 0.769127042087032},
+		{42.6939047915327, 1.0, 0.246829649846585, 0.856323537072923},
+		{40.667109080911, 1.0, 7.88676615499091, 0.769127042087032},
 	};
+	
 	public static int[][] CORE_SETUP = {
 		{0, 1},
 		{0, 8, 64, 256},
 		{0, 8, 64, 256, 1024}
 	};
 
-	public static final String[] MODE_NAMES = {"sqrt"}; // , "int", "log", "float"};
+	public static final String[] MODE_NAMES = {"sqrt", "int", "log", "float"};
+	public static final int[] MODES = {0};
 	
 	private static int m, z;
 	private static int[] n = new int[3];
@@ -67,14 +74,15 @@ public class GenRunAllCL {
 	private static double getAlpha(int dev, int m) {
 		if(dev==1 && n[1]>8)
 			dev = 3;
-		return ALPHA[dev][m];
+		return ALPHA[m][dev];
 	}
 	
 	public static void main(String[] args) {
 		System.out.printf("REM %s, %s\nREM b m w j p z n0 n1 n2\n@ECHO OFF\n",
 				WORKLOAD.name(), BALANCED ? "balanced" : "equal-share");
 		int count = 0;
-		for(m=0; m<MODE_NAMES.length; m++) {
+		for(int mi=0; mi<MODES.length; mi++) {
+			m = MODES[mi];
 			for(int pi=0; pi<P.length; pi++) {
 				p = P[pi];
 				System.out.printf("\nREM %s p=%.1f\n", MODE_NAMES[m], p);
@@ -98,7 +106,7 @@ public class GenRunAllCL {
 								alphaMin = Math.min(getAlpha(1, m), alphaMin);
 							if(n[2]>0)
 								alphaMin = Math.min(getAlpha(2, m), alphaMin);
-							alphaS = ALPHA[z][m];
+							alphaS = ALPHA[m][z];
 							
 							String opt = WORKLOAD.get(p, m, n[0], n[1], n[2]);
 							

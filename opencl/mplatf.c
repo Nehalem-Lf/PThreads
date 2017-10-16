@@ -6,7 +6,7 @@
 const char *dev_names[] = {"Intel(R) OpenCL", "Intel(R) OpenCL", "NVIDIA_CUDA"};
 const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_GPU};
 const int max_n[] = {1, 512, 1024};
-const double boost[][NDEVS] = {{250.0, 1.0, 1.0}, {25.0, 1.0, 1.0}, {2.5, 1.0, 1.0}, {25.0, 1.0, 1.0}};
+const double boost[][NDEVS] = {{500.0, 1.0, 1.0}, {25.0, 1.0, 1.0}, {2.5, 1.0, 1.0}, {25.0, 1.0, 1.0}};
 
 int verbose = 0;
 
