@@ -8,22 +8,22 @@ import ncl.cs.prime.oxml.SpreadsheetGenerator.CellStyle;
 
 public class CollectSpreadsheetCL {
 
-	public static final String PATH = "../opencl/results/171015";
-	public static final String SRC = PATH+"/multicl_amd_sqrts.log";
-	public static final String OUTPUT = PATH+"/amd_sqrts.xml";
+	public static final String PATH = "../opencl/results/171016";
+	public static final String SRC = PATH+"/multicl_guspar_sqrt.log";
+	public static final String OUTPUT = PATH+"/guspar_sqrts.xml";
 	
 	public static final String[] M = {"sqrt", "int", "log"};
 	public static enum Workload { amd, gusProp, gusPar };
 
 	public static boolean BALANCED = false;
-	public static Workload WORKLOAD = Workload.amd;
+	public static Workload WORKLOAD = Workload.gusPar;
 
 	public static String[] DEVS = {"CPU", "IntGPU", "Nvidia", "IntGPU 16+"};
 	public static int BCE = 1;
 	public static double[][] ALPHA = {
 		{24.3514350982078, 1.0, 14.9801660268563, 0.768866737195047},
-		{44.8193090314286, 1.0, 7.88138500961576, 0.769127042087032},
-		{42.1935700269098, 1.0, 0.246802069111646, 0.856323537072923},
+		{40.667109080911, 1.0, 7.88676615499091, 0.769127042087032},
+		{42.6939047915327, 1.0, 0.246829649846585, 0.856323537072923},
 	};
 	
 	private static int getDev(int d, int[] n) {
@@ -156,7 +156,7 @@ public class CollectSpreadsheetCL {
 				out.addFormula("num2", String.format("=R%dC[+1]", 4+DEVS.length)); // T1 
 				out.addNumber("num2bgy", res.total);
 				out.addNumber(res.j);
-				out.addFormula("=RC[-1]*RC4"); // g 
+				out.addFormula("=RC[-1]*RC7"); // g 
 				out.addFormula("num4bgb", "=RC[-4]/RC[-3]*((1-RC2)+RC2*RC[-2]*RC7)"); // SP_meas 
 				out.addFormula("pc", "=(RC[-6]-RC[-1])/RC[-1]"); // err 
 				

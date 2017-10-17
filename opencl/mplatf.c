@@ -8,6 +8,12 @@ const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_D
 const int max_n[] = {1, 512, 1024};
 const double boost[][NDEVS] = {{500.0, 1.0, 1.0}, {25.0, 1.0, 1.0}, {2.5, 1.0, 1.0}, {25.0, 1.0, 1.0}};
 
+const double alpha[][NDEVS] = {
+	{24.3514350982078, 1.0, 14.9801660268563, 0.768866737195047},
+	{40.667109080911, 1.0, 7.88676615499091, 0.769127042087032},
+	{42.6939047915327, 1.0, 0.246829649846585, 0.856323537072923}
+};
+
 int verbose = 0;
 
 //--------------------------------- time profiling -----------------------------------
@@ -266,21 +272,27 @@ int main(int argc, char* argv[]) {
 	printf("%d threads...\n", n_total);
 
 	if(balanced) {
-		/*printf("--balanced, alpha_A15=%.3lf\n", alpha_a15[mode]);
-		// balance npar
-		double alpha_total = 0.0;
-		for(r = 0; r < num_threads; r++) {
-			if(affinities[r]<'4')
-				alpha_total += 1.0;
-			else
-				alpha_total += alpha_a15[mode];
+		printf("--balanced, alpha={");
+		for(i=0; i<NDEVS; i++) {
+			if(i>0)
+				printf(", ");
+			printf("%.3lf", alpha[mode][i]);
 		}
-		for(r = 0; r < num_threads; r++) {
-			if(affinities[r]<'4')
-				tinfo[r].arg = (int)((ntotal*num_threads*p*adjust) / alpha_total);
-			else
-				tinfo[r].arg = (int)((ntotal*num_threads*p*adjust) * alpha_a15[mode] / alpha_total);
-		}*/
+		printf("}\n");
+		// balance k_par
+		double a;
+		double alpha_total = 0.0;
+		for(i=0; i<NDEVS; i++) {
+			a = (i==1 && n[i]>=16) ? alpha[mode][3] : alpha[mode][i];
+			alpha_total += a;
+		}
+		for(i=0; i<NDEVS; i++) {
+			a = (i==1 && n[i]>=16) ? alpha[mode][3] : alpha[mode][i];
+			double k_par = (ktotal*n_total*p*adjust) * a / alpha_total;
+			k[i] = (int)(k_par / boost[mode][i]);
+			if(verbose)
+				printf("WLpar[%d]=%d\n", i, k[i]);
+		}
 	}
 	else {
 		printf("--equal share\n");
