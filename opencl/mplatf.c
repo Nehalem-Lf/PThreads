@@ -8,7 +8,7 @@ const cl_device_type dev_types[] = {CL_DEVICE_TYPE_CPU, CL_DEVICE_TYPE_GPU, CL_D
 const int max_n[] = {1, 512, 1024};
 const double boost[][NDEVS] = {{500.0, 1.0, 1.0}, {25.0, 1.0, 1.0}, {2.5, 1.0, 1.0}, {25.0, 1.0, 1.0}};
 
-const double alpha[][NDEVS] = {
+const double alpha[][NDEVS+1] = {
 	{24.3514350982078, 1.0, 14.9801660268563, 0.768866737195047},
 	{40.667109080911, 1.0, 7.88676615499091, 0.769127042087032},
 	{42.6939047915327, 1.0, 0.246829649846585, 0.856323537072923}
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
 		double alpha_total = 0.0;
 		for(i=0; i<NDEVS; i++) {
 			a = (i==1 && n[i]>=16) ? alpha[mode][3] : alpha[mode][i];
-			alpha_total += a;
+			alpha_total += a*n[i];
 		}
 		for(i=0; i<NDEVS; i++) {
 			a = (i==1 && n[i]>=16) ? alpha[mode][3] : alpha[mode][i];

@@ -42,14 +42,14 @@ public class GenRunAllCL {
 
 	// Experiment options:
 	public static final WorkloadOption WORKLOAD = AMDAHL;
-	public static final boolean BALANCED = false;
+	public static final boolean BALANCED = true;
 	public static final double[] P = {0.9, 0.3};
 	
-	public static final int BASE_W = 4096000;
+	public static final int BASE_W = 40960000;
 	// amd sqrt: 40960000
 	// amd int: 81920000
 	// amd log: (p=0.9) 5120000; (p=0.3, 0.9) 40960000
-	// gus sqrt: 4096000
+	// gus sqrt: 40960000
 	
 	public static double[][] ALPHA = {
 		{24.3514350982078, 1.0, 14.9801660268563, 0.768866737195047},
@@ -100,6 +100,7 @@ public class GenRunAllCL {
 							if(z==2 && n[2]==0)
 								continue;
 							
+							alphaMin = Double.MAX_VALUE;
 							if(n[0]>0)
 								alphaMin = getAlpha(0, m);
 							if(n[1]>0)
