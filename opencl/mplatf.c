@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
 		}
 		for(i=0; i<NDEVS; i++) {
 			a = (i==1 && n[i]>=16) ? alpha[mode][3] : alpha[mode][i];
-			double k_par = (ktotal*n_total*p*adjust) * a / alpha_total;
+			double k_par = ((double)ktotal*(double)n_total*p*adjust) * a / alpha_total;
 			k[i] = (int)(k_par / boost[mode][i]);
 			if(verbose)
 				printf("WLpar[%d]=%d\n", i, k[i]);
