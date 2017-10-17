@@ -8,9 +8,9 @@ import ncl.cs.prime.oxml.SpreadsheetGenerator.CellStyle;
 
 public class CollectSpreadsheetCL {
 
-	public static final String PATH = "../opencl/results/171016";
-	public static final String SRC = PATH+"/multicl_guspar_sqrt.log";
-	public static final String OUTPUT = PATH+"/guspar_sqrts.xml";
+	public static final String PATH = "../opencl/results/171017_2";
+	public static final String SRC = PATH+"/multicl_guspar_logs3.log";
+	public static final String OUTPUT = PATH+"/guspar_logs3.xml";
 	
 	public static final String[] M = {"sqrt", "int", "log"};
 	public static enum Workload { amd, gusProp, gusPar };
@@ -90,6 +90,7 @@ public class CollectSpreadsheetCL {
 			
 			out.beginRow();
 			out.addString("hdr", "m");
+			out.addString("hdr", "w");
 			out.addString("hdr", "p");
 			out.addString("hdr", "z");
 			out.addString("hdr", "n0");
@@ -109,8 +110,11 @@ public class CollectSpreadsheetCL {
 			out.endRow();
 			
 			for(BenchmarkResult res : times.results) {
+				if(res.m==2 && res.n[2]>64)
+					continue;
 				out.beginRow();
 				out.addString(M[res.m]);
+				out.addNumber(res.w);
 				out.addNumber("bga", res.p);
 				out.addNumber(res.z);
 				out.addNumber(res.n[0]);
@@ -136,28 +140,28 @@ public class CollectSpreadsheetCL {
 				
 				// Na
 				if(BALANCED)
-					out.addFormula("num2", String.format("=RC4*R2C11+RC5*R%dC11+RC6*R4C11", getDev(1, res.n)+2)); 
+					out.addFormula("num2", String.format("=RC5*R2C11+RC6*R%dC11+RC7*R4C11", getDev(1, res.n)+2)); 
 				else
 					out.addFormula("num2", "=RC[-3]*RC[-1]");
 				
 				// SP_law
 				switch(WORKLOAD) {
 					case amd:
-						out.addFormula("num4bgb", "=1/((1-RC2)/RC[-3]+RC2/RC[-1])");
+						out.addFormula("num4bgb", "=1/((1-RC3)/RC[-3]+RC3/RC[-1])");
 						break;
 					case gusProp:
-						out.addFormula("num4bgb", "=(1-RC2)*RC[-3]+RC2*RC[-1]");
+						out.addFormula("num4bgb", "=(1-RC3)*RC[-3]+RC3*RC[-1]");
 						break;
 					case gusPar:
-						out.addFormula("num4bgb", "=(1-RC2)+RC[-1]*(1-(1-RC2)/RC[-3])");
+						out.addFormula("num4bgb", "=(1-RC3)+RC[-1]*(1-(1-RC3)/RC[-3])");
 						break;
 				}
 				
 				out.addFormula("num2", String.format("=R%dC[+1]", 4+DEVS.length)); // T1 
 				out.addNumber("num2bgy", res.total);
 				out.addNumber(res.j);
-				out.addFormula("=RC[-1]*RC7"); // g 
-				out.addFormula("num4bgb", "=RC[-4]/RC[-3]*((1-RC2)+RC2*RC[-2]*RC7)"); // SP_meas 
+				out.addFormula("num2", "=RC[-1]*RC8"); // g 
+				out.addFormula("num4bgb", "=(RC2/R8C2)*(RC[-4]/RC[-3])*((1-RC3)+RC3*RC[-2]*RC8)"); // SP_meas 
 				out.addFormula("pc", "=(RC[-6]-RC[-1])/RC[-1]"); // err 
 				
 				out.endRow();

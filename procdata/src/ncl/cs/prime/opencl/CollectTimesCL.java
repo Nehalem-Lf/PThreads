@@ -79,7 +79,7 @@ public class CollectTimesCL {
 		for(BenchmarkResult res : results) {
 			switch(mode) {
 			case EXEC_TIME:
-				System.out.printf("%s\t%.1f\t%.5f\t%d\t%d\t%d\t%d\t%.5f\n", M[res.m], res.p, res.j, res.z, res.n[0], res.n[1], res.n[2], res.total);
+				System.out.printf("%s\t%d\t%.1f\t%.5f\t%d\t%d\t%d\t%d\t%.5f\n", M[res.m], res.w, res.p, res.j, res.z, res.n[0], res.n[1], res.n[2], res.total);
 				break;
 			}
 		}
