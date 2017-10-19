@@ -20,6 +20,6 @@ Current version is designed for Odroid XU3 board and uses power monitors.
 * **GenRunAll** generates a shell script for running pthreads benchmark in all core combinations.
 * **CollectTimes** collects execution times from pthreads.log generated during the experiment.
 * **CollectSpreadsheet** collects data from all experiments into a single MS Office XML spreadsheet with all relevant calculations and nice formatting.
-* **Diagrams** produces bar charts in VSG format from CSV input data.
+* **Diagrams** produces bar charts in SVG format from CSV input data.
 * **...CL** versions of these files are tailored to OpenCL experiments.
 
