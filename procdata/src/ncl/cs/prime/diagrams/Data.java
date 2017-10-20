@@ -14,6 +14,10 @@ public class Data {
 		public boolean accept(Row row);
 	}
 	
+	public static interface Formula {
+		public String calc(Row row);
+	}
+	
 	public class Row {
 		public String[] cells;
 		
@@ -54,9 +58,68 @@ public class Data {
 				rows.add(row);
 		}
 	}
+	
+	public Data(Data left, Data right, String[] key, String leftPrefix, String rightPrefix) {
+		this.headers = new String[left.headers.length+right.headers.length];
+		int j=0;
+		for(int i=0; i<left.headers.length; i++, j++) {
+			this.headers[j] = leftPrefix+left.headers[i];
+			headerMap.put(headers[j], j);
+		}
+		for(int i=0; i<right.headers.length; i++, j++) {
+			this.headers[j] = rightPrefix+right.headers[i];
+			headerMap.put(headers[j], j);
+		}
+		int[] lkeyCols = new int[key.length];
+		int[] rkeyCols = new int[key.length];
+		for(int i=0; i<key.length; i++) {
+			lkeyCols[i] = left.findCol(key[i]);
+			rkeyCols[i] = right.findCol(key[i]);
+		}
+		for(Row lrow: left.rows) {
+			for(Row rrow: right.rows) {
+				boolean match = true;
+				for(int i=0; i<key.length; i++)
+					if(!lrow.cells[lkeyCols[i]].equals(rrow.cells[rkeyCols[i]])) {
+						match = false;
+						break;
+					}
+				if(match) {
+					Row row = new Row();
+					row.cells = new String[this.headers.length];
+					j=0;
+					for(int i=0; i<left.headers.length; i++, j++) {
+						row.cells[j] = lrow.cells[i];
+					}
+					for(int i=0; i<right.headers.length; i++, j++) {
+						row.cells[j] = rrow.cells[i];
+					}
+					rows.add(row);
+				}
+			}
+		}
+	}
 
 	public int findCol(String hdr) {
 		return headerMap.get(hdr);
+	}
+	
+	public void addCol(String hdr, Formula calc) {
+		int col = this.headers.length;
+		String[] headers = new String[col+1];
+		for(int i=0; i<this.headers.length; i++)
+			headers[i] = this.headers[i];
+		headers[col] = hdr;
+		headerMap.put(hdr, col);
+		this.headers = headers;
+		
+		for(Row row: rows) {
+			String[] cells = new String[col+1];
+			for(int i=0; i<col; i++)
+				cells[i] = row.cells[i];
+			cells[col] = calc.calc(row);
+			row.cells = cells;
+		}
 	}
 	
 	private void setHeaders(String[] headers) {

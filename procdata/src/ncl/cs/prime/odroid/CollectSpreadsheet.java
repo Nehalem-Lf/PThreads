@@ -11,7 +11,7 @@ public class CollectSpreadsheet {
 	public static final String PATH = "../odroid";
 	public static final String DATA_PATH = PATH+"/guspar";
 	public static final String SRC = DATA_PATH+"/pthreads.log";
-	public static final String OUTPUT = "guspar_results.xml";
+	public static final String OUTPUT = PATH+"/results/guspar_results.xml";
 	
 	public static final String[] M = {"sqrt", "int", "log"};
 	public static enum Workload { amd, gusProp, gusPar };
@@ -41,6 +41,7 @@ public class CollectSpreadsheet {
 			out.addStyle(new CellStyle("bgp").bgColor("#DDDDFF"));
 			out.addStyle(new CellStyle("bgs").bgColor("#DDDDDD"));
 			out.addStyle(new CellStyle("bgy").bgColor("#FFFFCC"));
+			out.addStyle(new CellStyle("num1").numFormat("0.0"));
 			out.addStyle(new CellStyle("num4").numFormat("0.0000"));
 			out.addStyle(new CellStyle("num4fade", defStyle).textColor("#999999").numFormat("0.0000"));
 			out.addStyle(new CellStyle("num4bgb").bgColor("#99CCFF").numFormat("0.0000"));
@@ -225,7 +226,8 @@ public class CollectSpreadsheet {
 			out.addString("hdr", "WN");
 			out.addString("hdr", "Wtotal");
 			out.addString("hdr", "Wmeas");
-			out.addString("hdr", "err");
+			out.addString("hdr", "W_err");
+			out.addString("hdr", "EDP");
 
 			out.endRow();
 			for(BenchmarkResult res : times.results) {
@@ -313,7 +315,7 @@ public class CollectSpreadsheet {
 				out.addFormula("num4bgp", "=RC[-1]+R3C13"); // Wtotal 
 				out.addNumber("num4bgp", res.power.totalMean); 
 				out.addFormula("pc", "=(RC[-2]-RC[-1])/RC[-1]"); // err 
-				
+				out.addFormula("num1", "=RC[-2]*RC11*RC11/1e6"); // EDP 
 				out.endRow();
 			}
 			

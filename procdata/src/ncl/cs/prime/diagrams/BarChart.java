@@ -10,25 +10,29 @@ import java.io.PrintWriter;
 
 public class BarChart {
 
+	public static final String[] palette = {"#ff420e", "#004586", "#9999ff", "#ffd320", "#399d1c", "#7e0021", "#83caff"};
+	
 	public static final int defPivotX = 100;
 	public static final int defPivotY = 300;
 	public static final int chartPaddingX = 75;
 	public static final int chartPaddingY = 20;
 	
 	public static final int areaHeight = 180;
-	public static final int barWidth = 15;
-	public static final int barMargin = 5;
+	public static final int barWidth = 14;
+	public static final int barMargin = 3;
 	public static final int legendItemMargin = 20;
 	
 	public final Data data; 
 
 	public String yAxisFormat = "%.1f";
-	public String[] barColors = {"#ff420e", "#004586", "#9999ff", "#ffd320", "#399d1c", "#7e0021", "#83caff"};
-	
+	public String[] xAxisLabelData;
+	public String[] xAxisNames;
 	public double min, max, step;
 	public double log = 0.0;
+
 	public String[] bars; 
 	public String[] legend;
+	public String[] barColors = {palette[0], palette[1]};
 	
 	public int labelBar = -1;
 	public String labelData;
@@ -64,13 +68,32 @@ public class BarChart {
 		}
 		return this;
 	}
+
+	public BarChart setXAxisLabels(String... labels) {
+		this.xAxisLabelData = new String[labels.length];
+		this.xAxisNames = new String[labels.length];
+		for(int i=0; i<labels.length; i++) {
+			String[] s = labels[i].split("\\:", 2); 
+			this.xAxisNames[i] = s[0];
+			this.xAxisLabelData[i] = s[1];
+		}
+		return this;
+	}
+
+	public BarChart setBarColors(int... colorIds) {
+		this.barColors = new String[bars.length];
+		for(int i=0; i<bars.length; i++) {
+			this.barColors[i] = palette[colorIds[i]];
+		}
+		return this;
+	}
 	
 	public BarChart setLabelBar(int bar, String dataHdr) {
 		this.labelBar = bar;
 		this.labelData = dataHdr;
 		return this;
 	}
-	
+		
 	private static double logb(double x, double b) {
 		return Math.log(x) / Math.log(b);
 	}
@@ -163,20 +186,27 @@ public class BarChart {
 		out.printf("</g>\n");
 		
 		// X-axis labels
+		// TODO center at bars?
 		out.printf("<g style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\">\n");
 		tx = barMargin + 2.5;
 		for(int r=0; r<len; r++) {
 			Data.Row row = data.rows.get(r);
-			out.printf("\t<text transform=\"translate(%f, 12.5)\">\n"
-				+ "\t\t<tspan x=\"0\" y=\"0\">%s</tspan>\n"
-				+ "\t\t<tspan x=\"0\" y=\"11\">%s</tspan>\n"
-				+ "\t</text>\n", tx, row.get("n1"), row.get("n2")); // FIXME specific to OpenCL
+			out.printf("\t<text transform=\"translate(%f, 12.5)\">\n", tx);
+			ty = 0;
+			for(int i=0; i<xAxisNames.length; i++) {
+				out.printf("\t\t<tspan x=\"0\" y=\"%f\">%s</tspan>\n", ty, row.get(xAxisLabelData[i]));
+				ty += 11;
+			}
+			out.printf("\t</text>\n");
 			tx += gridx;
 		}
-		out.printf("\t<text transform=\"translate(%f, 12.5)\">\n"
-				+ "\t\t<tspan x=\"0\" y=\"0\">IntGPU</tspan>\n"
-				+ "\t\t<tspan x=\"0\" y=\"11\">Nvidia</tspan>\n"
-				+ "\t</text>\n", tx); // FIXME specific to OpenCL
+		out.printf("\t<text transform=\"translate(%f, 12.5)\">\n", tx);
+		ty = 0;
+		for(int i=0; i<xAxisNames.length; i++) {
+			out.printf("\t\t<tspan x=\"0\" y=\"%f\">%s</tspan>\n", ty, xAxisNames[i]);
+			ty += 11;
+		}
+		out.printf("\t</text>\n");
 		out.printf("</g>\n");
 
 		out.printf("</g>\n");
@@ -184,7 +214,7 @@ public class BarChart {
 		// Bars
 		out.printf("<g><!-- Bars -->\n");
 		
-		out.printf("<g stroke=\"#000000\" stroke-width=\"0.5\">");
+		out.printf("<g stroke=\"#000000\" stroke-width=\"0.5\">\n");
 		tx = barMargin;
 		for(int r=0; r<len; r++) {
 			Data.Row row = data.rows.get(r);
@@ -200,24 +230,26 @@ public class BarChart {
 		out.printf("</g>\n");
 		
 		// Bar labels
-		out.printf("<g text-anchor=\"middle\"  style=\"font-weight:normal;font-size:11px;font-family:Arial\">\n");
-		for(int layer=0; layer<2; layer++) {
-			if(layer==0)
-				out.printf("<g style=\"fill:none;stroke:#ffffff;stroke-width:3\">\n");
-			else
-				out.printf("<g style=\"fill:#000000;fill-opacity:1;stroke:none\">\n");
-			tx = barMargin + barWidth*labelBar+barWidth/2.0;
-			for(int r=0; r<len; r++) {
-				Data.Row row = data.rows.get(r);
-				double val = val(row, labelBar);
-				if(val<0.0)
-					val = 0.0;
-				out.printf("\t<text transform=\"translate(%f, %f)\">%s</text>\n", tx, -val-5.0, row.get(labelData)); // FIXME specific  to OpenCL
-				tx += gridx;
+		if(labelBar>=0) {
+			out.printf("<g text-anchor=\"middle\"  style=\"font-weight:normal;font-size:11px;font-family:Arial\">\n");
+			for(int layer=0; layer<2; layer++) {
+				if(layer==0)
+					out.printf("<g style=\"fill:none;stroke:#ffffff;stroke-width:3\">\n");
+				else
+					out.printf("<g style=\"fill:#000000;fill-opacity:1;stroke:none\">\n");
+				tx = barMargin + barWidth*labelBar+barWidth/2.0;
+				for(int r=0; r<len; r++) {
+					Data.Row row = data.rows.get(r);
+					double val = val(row, labelBar);
+					if(val<0.0)
+						val = 0.0;
+					out.printf("\t<text transform=\"translate(%f, %f)\">%s</text>\n", tx, -val-5.0, row.get(labelData));
+					tx += gridx;
+				}
+				out.printf("</g>\n");
 			}
 			out.printf("</g>\n");
 		}
-		out.printf("</g>\n");
 
 		out.printf("</g>\n");
 		
@@ -226,7 +258,7 @@ public class BarChart {
 		out.printf("<g><!-- Title and legend -->\n");
 		out.printf("<text text-anchor=\"middle\" style=\"font-weight:bold;font-size:12px;font-family:Arial;fill:#000000;stroke:none\" x=\"%f\" y=\"%d\">%s</text>\n",
 				mid, -areaHeight-25, title);
-		FontMetrics fm = fontMetrics("Arial", Font.PLAIN, 12f);
+		FontMetrics fm = fontMetrics("Arial", Font.PLAIN, 11f);
 		int[] widths = new int[legend.length];
 		int legendWidth = 0;
 		for(int b=0; b<legend.length; b++) {
@@ -240,7 +272,7 @@ public class BarChart {
 		for(int b=0; b<legend.length; b++) {
 			out.printf("<g transform=\"translate(%f, %d)\">\n", tx, -areaHeight-10);
 			out.printf("\t<rect x=\"0\" y=\"-6\" width=\"6\" height=\"6\" style=\"fill:%s;stroke:none\"/>\n", barColors[b]);
-			out.printf("\t<text style=\"font-weight:normal;font-size:10px;font-family:Arial;fill:#000000;stroke:none\" x=\"9\" y=\"0\">%s</text>\n", legend[b]);
+			out.printf("\t<text style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\" x=\"9\" y=\"0\">%s</text>\n", legend[b]);
 			out.printf("</g>\n");
 			tx += widths[b]+legendItemMargin;
 		}
@@ -255,12 +287,12 @@ public class BarChart {
 			+ "<svg\n"
 			+ "\txmlns:svg=\"http://www.w3.org/2000/svg\"\n"
 			+ "\txmlns=\"http://www.w3.org/2000/svg\"\n"
-			+ "\twidth=\"2105\"\n"
-			+ "\theight=\"1488.75\"\n"
+			+ "\twidth=\"793.70079\"\n"
+			+ "\theight=\"1122.51969\"\n"
 			+ "\tpagecolor=\"#ffffff\"\n"
 			+ "\tbordercolor=\"#777777\"\n"
 			+ "\tborderopacity=\"1\"\n"
-			+ ">\n");
+			+ "><g transform=\"scale(0.5)\">\n");
 		return out;
 	}
 
@@ -300,7 +332,7 @@ public class BarChart {
 	}
 	
 	public static void finishSvg(PrintWriter out) {
-		out.printf("</svg>\n");
+		out.printf("</g></svg>\n");
 		out.close();
 	}
 	
