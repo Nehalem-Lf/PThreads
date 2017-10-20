@@ -186,9 +186,8 @@ public class BarChart {
 		out.printf("</g>\n");
 		
 		// X-axis labels
-		// TODO center at bars?
-		out.printf("<g style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\">\n");
-		tx = barMargin + 2.5;
+		out.printf("<g text-anchor=\"middle\" style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\">\n");
+		tx = gridx/2.0;
 		for(int r=0; r<len; r++) {
 			Data.Row row = data.rows.get(r);
 			out.printf("\t<text transform=\"translate(%f, 12.5)\">\n", tx);
@@ -200,7 +199,8 @@ public class BarChart {
 			out.printf("\t</text>\n");
 			tx += gridx;
 		}
-		out.printf("\t<text transform=\"translate(%f, 12.5)\">\n", tx);
+		tx = tx - gridx/2.0 +barMargin + 2.5;
+		out.printf("\t<text text-anchor=\"start\" transform=\"translate(%f, 12.5)\">\n", tx);
 		ty = 0;
 		for(int i=0; i<xAxisNames.length; i++) {
 			out.printf("\t\t<tspan x=\"0\" y=\"%f\">%s</tspan>\n", ty, xAxisNames[i]);
@@ -231,7 +231,7 @@ public class BarChart {
 		
 		// Bar labels
 		if(labelBar>=0) {
-			out.printf("<g text-anchor=\"middle\"  style=\"font-weight:normal;font-size:11px;font-family:Arial\">\n");
+			out.printf("<g text-anchor=\"middle\" style=\"font-weight:normal;font-size:11px;font-family:Arial\">\n");
 			for(int layer=0; layer<2; layer++) {
 				if(layer==0)
 					out.printf("<g style=\"fill:none;stroke:#ffffff;stroke-width:3\">\n");

@@ -101,7 +101,10 @@ public class Data {
 	}
 
 	public int findCol(String hdr) {
-		return headerMap.get(hdr);
+		Integer col = headerMap.get(hdr);
+		if(col==null)
+			throw new RuntimeException("No column "+hdr);
+		return col;
 	}
 	
 	public void addCol(String hdr, Formula calc) {
