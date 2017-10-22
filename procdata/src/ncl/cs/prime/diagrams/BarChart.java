@@ -18,7 +18,7 @@ public class BarChart {
 	public static final int chartPaddingY = 20;
 	
 	public static final int areaHeight = 180;
-	public static final int barWidth = 14;
+	public static final int barWidth = 12;
 	public static final int barMargin = 3;
 	public static final int legendItemMargin = 20;
 	
@@ -145,15 +145,12 @@ public class BarChart {
 		int gridx = bars.length*barWidth + barMargin*2;
 		double gridy = (log>0.0) ? areaHeight / logb(max/min, step) : areaHeight * step / (max-min);
 		
-		// Axes and grid
-		out.printf("<g><!-- Axes and grid -->\n");
-		
-		// Axes
-		out.printf("<line x1=\"0\" y1=\"-%d\" x2=\"0\" y2=\"0\" stroke=\"#000000\" stroke-width=\"1\"/>\n", areaHeight);
-		out.printf("<line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" stroke=\"#000000\" stroke-width=\"1\"/>\n", len*gridx);
+		// Grid
+		out.printf("<g><!-- Grid -->\n");
 		
 		// Grid
-		out.printf("<g stroke-dasharray=\"1, 2\" stroke=\"#000000\" stroke-width=\"0.5\">\n");
+		// out.printf("<g stroke-dasharray=\"1, 2\" stroke=\"#000000\" stroke-width=\"0.5\">\n");
+		out.printf("<g stroke=\"#000000\" stroke-width=\"0.25\">\n");
 		out.printf("\t<line x1=\"%d\" y1=\"-%d\" x2=\"%d\" y2=\"0\"/>\n", len*gridx, areaHeight, len*gridx);
 		ty = -gridy;
 		for(double y=nexty(min); y<=max; y=nexty(y)) {
@@ -162,6 +159,33 @@ public class BarChart {
 		}
 		out.printf("</g>\n");
 
+		out.printf("</g>\n");
+		
+		// Bars
+		out.printf("<g><!-- Bars -->\n");
+		
+		out.printf("<g stroke=\"#000000\" stroke-width=\"0.5\">\n");
+		tx = barMargin;
+		for(int r=0; r<len; r++) {
+			Data.Row row = data.rows.get(r);
+			for(int b=0; b<bars.length; b++) {
+				double val = val(row, b);
+				if(val>0.0)
+					out.printf("\t<rect x=\"%f\" y=\"%f\" width=\"%d\" height=\"%f\" fill=\"%s\" />\n", tx+b*barWidth, -val, barWidth, val, barColors[b]);
+				else
+					out.printf("\t<rect x=\"%f\" y=\"0\" width=\"%d\" height=\"%f\" fill=\"%s\" />\n", tx+b*barWidth, barWidth, -val, barColors[b]);
+			}
+			tx += gridx;
+		}
+		out.printf("</g>\n");
+		
+		out.printf("</g>\n");
+		
+		// Axes
+		out.printf("<g><!-- Axes -->\n");
+		out.printf("<line x1=\"0\" y1=\"-%d\" x2=\"0\" y2=\"0\" stroke=\"#000000\" stroke-width=\"1\"/>\n", areaHeight);
+		out.printf("<line x1=\"0\" y1=\"0\" x2=\"%d\" y2=\"0\" stroke=\"#000000\" stroke-width=\"1\"/>\n", len*gridx);
+		
 		// Axis marks
 		out.printf("<g stroke=\"#000000\" stroke-width=\"0.5\">\n");
 		ty = 0;
@@ -186,7 +210,7 @@ public class BarChart {
 		out.printf("</g>\n");
 		
 		// X-axis labels
-		out.printf("<g text-anchor=\"middle\" style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\">\n");
+		out.printf("<g text-anchor=\"middle\" style=\"font-weight:normal;font-size:12px;font-family:Arial;fill:#000000;stroke:none\">\n");
 		tx = gridx/2.0;
 		for(int r=0; r<len; r++) {
 			Data.Row row = data.rows.get(r);
@@ -208,29 +232,13 @@ public class BarChart {
 		}
 		out.printf("\t</text>\n");
 		out.printf("</g>\n");
+		
+		out.printf("</g>\n");
 
-		out.printf("</g>\n");
-		
-		// Bars
-		out.printf("<g><!-- Bars -->\n");
-		
-		out.printf("<g stroke=\"#000000\" stroke-width=\"0.5\">\n");
-		tx = barMargin;
-		for(int r=0; r<len; r++) {
-			Data.Row row = data.rows.get(r);
-			for(int b=0; b<bars.length; b++) {
-				double val = val(row, b);
-				if(val>0.0)
-					out.printf("\t<rect x=\"%f\" y=\"%f\" width=\"%d\" height=\"%f\" fill=\"%s\" />\n", tx+b*barWidth, -val, barWidth, val, barColors[b]);
-				else
-					out.printf("\t<rect x=\"%f\" y=\"0\" width=\"%d\" height=\"%f\" fill=\"%s\" />\n", tx+b*barWidth, barWidth, -val, barColors[b]);
-			}
-			tx += gridx;
-		}
-		out.printf("</g>\n");
-		
 		// Bar labels
 		if(labelBar>=0) {
+			out.printf("<g><!-- Bar labels -->\n");
+			
 			out.printf("<g text-anchor=\"middle\" style=\"font-weight:normal;font-size:11px;font-family:Arial\">\n");
 			for(int layer=0; layer<2; layer++) {
 				if(layer==0)
@@ -249,16 +257,17 @@ public class BarChart {
 				out.printf("</g>\n");
 			}
 			out.printf("</g>\n");
+			
+			out.printf("</g>\n");
 		}
 
-		out.printf("</g>\n");
 		
 		// Title and legend
 		double mid = len*gridx/2.0; 
 		out.printf("<g><!-- Title and legend -->\n");
-		out.printf("<text text-anchor=\"middle\" style=\"font-weight:bold;font-size:12px;font-family:Arial;fill:#000000;stroke:none\" x=\"%f\" y=\"%d\">%s</text>\n",
-				mid, -areaHeight-25, title);
-		FontMetrics fm = fontMetrics("Arial", Font.PLAIN, 11f);
+		out.printf("<text text-anchor=\"middle\" style=\"font-weight:bold;font-size:14px;font-family:Arial;fill:#000000;stroke:none\" x=\"%f\" y=\"%d\">%s</text>\n",
+				mid, -areaHeight-26, title);
+		FontMetrics fm = fontMetrics("Arial", Font.PLAIN, 12f);
 		int[] widths = new int[legend.length];
 		int legendWidth = 0;
 		for(int b=0; b<legend.length; b++) {
@@ -271,8 +280,8 @@ public class BarChart {
 		tx = mid - legendWidth/2.0;
 		for(int b=0; b<legend.length; b++) {
 			out.printf("<g transform=\"translate(%f, %d)\">\n", tx, -areaHeight-10);
-			out.printf("\t<rect x=\"0\" y=\"-6\" width=\"6\" height=\"6\" style=\"fill:%s;stroke:none\"/>\n", barColors[b]);
-			out.printf("\t<text style=\"font-weight:normal;font-size:11px;font-family:Arial;fill:#000000;stroke:none\" x=\"9\" y=\"0\">%s</text>\n", legend[b]);
+			out.printf("\t<rect x=\"0\" y=\"-6.5\" width=\"6\" height=\"6\" style=\"fill:%s;stroke:none\"/>\n", barColors[b]);
+			out.printf("\t<text style=\"font-weight:normal;font-size:12px;font-family:Arial;fill:#000000;stroke:none\" x=\"9\" y=\"0\">%s</text>\n", legend[b]);
 			out.printf("</g>\n");
 			tx += widths[b]+legendItemMargin;
 		}

@@ -126,7 +126,8 @@ public class DiagramsCL {
 					Data dataBal = new Data(String.format("%s/%s_%s.csv", PATH, "bal", mode));
 					Data data = new Data(dataAmd, dataBal, new String[] {"m", "p", "z", "n0", "n1", "n2"}, "a.", "b.");
 					data.addCol("diff", new Diff("a.SP_meas", "b.SP_meas"));
-					charts[m] = createSPCompareChart(data, mode, 0.3, 0, "CPU", GUS_CMP_RANGES[m][0], GUS_CMP_RANGES[m][1]);
+					charts[m] = createSPCompareChart(data, mode, 0.3, 0, "CPU", GUS_CMP_RANGES[m][0], GUS_CMP_RANGES[m][1])
+						.setBars("classical scaling:a.SP_meas", "purely parallel scaling:b.SP_meas");
 				}
 
 				out = BarChart.startSvg(String.format("%s/gus_compare.svg", PATH));

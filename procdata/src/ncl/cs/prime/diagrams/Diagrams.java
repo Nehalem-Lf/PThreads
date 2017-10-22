@@ -25,13 +25,13 @@ public class Diagrams {
 		};
 	public static final double[][][] EDP_RANGES = {
 			{{2000, 200}, {2000, 200}},
-			{{2000, 200}, {2000, 200}},
+			{{2000, 200}, {2000 /*1400*/, 200}},
 		};
 	
-	public static boolean speedup = true;
-	public static boolean power = true;
+	public static boolean speedup = false;
+	public static boolean power = false;
 	public static boolean balCompare = true;
-	public static boolean gusCompare = true;
+	public static boolean gusCompare = false;
 	
 	private static class Diff implements Formula {
 		public final String cola, colb;
@@ -100,6 +100,7 @@ public class Diagrams {
 			.setBars("equal-share:a.EDP", "balanced:b.EDP")
 			.setBarColors(5, 6)
 			.setLabelBar(1, "EDP_diff");
+		ch.yAxisFormat = "%.0f";
 		return ch;
 	}
 	
@@ -173,7 +174,8 @@ public class Diagrams {
 				data.addCol("diff", new Diff("a.SP_meas", "b.SP_meas"));
 				for(int m=0; m<MODES.length; m++) {
 					String mode = MODES[m];
-					charts[m] = createSPCompareChart(data, mode, 0.3, SP_RANGES[3][0][0], SP_RANGES[3][0][1]);
+					charts[m] = createSPCompareChart(data, mode, 0.3, SP_RANGES[3][0][0], SP_RANGES[3][0][1])
+						.setBars("classical scaling:a.SP_meas", "purely parallel scaling:b.SP_meas");
 				}
 
 				out = BarChart.startSvg(String.format("%s/gus_compare.svg", PATH));
