@@ -49,7 +49,7 @@ public class DiagramsCL {
 			});
 		String title = String.format("%s, p=%.1f, s=%s", mode, p, zName);
 		BarChart ch = new BarChart(title, d)
-			.setXAxisLabels("IntGPU:n1", "NVidia:n2")
+			.setXAxisLabels("IntGPU:n1", "Nvidia:n2")
 			.setBars("theory:SP_law", "measured:SP_meas")
 			.setLogRange(2.0, min, max, 2.0)
 			.setLabelBar(0, "err");
@@ -65,9 +65,9 @@ public class DiagramsCL {
 					return row.getDouble("a.p")==p && row.getInt("a.z")==z && !(row.getInt("a.n1")==0 && row.getInt("a.n2")==0);
 				}
 			});
-		String title = String.format("%s, p=%.1f, s=%s", mode, p, zName);
+		String title = String.format("Speedup: %s, p=%.1f, s=%s", mode, p, zName);
 		BarChart ch = new BarChart(title, d)
-			.setXAxisLabels("IntGPU:a.n1", "NVidia:a.n2")
+			.setXAxisLabels("IntGPU:a.n1", "Nvidia:a.n2")
 			.setBars("equal-share:a.SP_meas", "balanced:b.SP_meas")
 			.setLogRange(2.0, min, max, 2.0)
 			.setLabelBar(1, "diff");
