@@ -8,17 +8,17 @@ import ncl.cs.prime.oxml.SpreadsheetGenerator.CellStyle;
 
 public class CollectSpreadsheet {
 
-	public static final String PATH = "../odroid";
-	public static final String DATA_PATH = PATH+"/guspar";
+	public static final String PATH = "../odroid/data7b_171025a";
+	public static final String DATA_PATH = PATH+"/amd";
 	public static final String SRC = DATA_PATH+"/pthreads.log";
-	public static final String OUTPUT = PATH+"/results/guspar_results.xml";
+	public static final String OUTPUT = PATH+"/results/amd.xml";
 	
 	public static final String[] M = {"sqrt", "int", "log"};
 	public static enum Workload { amd, gusProp, gusPar };
 	public static final double[] FIXED_A15 = {0.9392, 1.2399, 1.7623};
 
 	public static boolean BALANCED = false;
-	public static Workload WORKLOAD = Workload.gusPar;
+	public static Workload WORKLOAD = Workload.amd;
 
 	private static class ModeCharacteristics {
 		public int timeA7, timeA15;
@@ -228,6 +228,8 @@ public class CollectSpreadsheet {
 			out.addString("hdr", "Wmeas");
 			out.addString("hdr", "W_err");
 			out.addString("hdr", "EDP");
+			out.addString("hdr", "abs");
+			out.addString("hdr", "W_abs");
 
 			out.endRow();
 			for(BenchmarkResult res : times.results) {
@@ -316,8 +318,25 @@ public class CollectSpreadsheet {
 				out.addNumber("num4bgp", res.power.totalMean); 
 				out.addFormula("pc", "=(RC[-2]-RC[-1])/RC[-1]"); // err 
 				out.addFormula("num1", "=RC[-2]*RC11*RC11/1e6"); // EDP 
+				
+				out.addFormula("pc", "=ABS(RC15)"); // abs
+				out.addFormula("pc", "=ABS(RC23)"); // W_abs
 				out.endRow();
 			}
+			
+			int end = 8+times.results.size();
+			out.beginRow();
+			out.skipCells(23);
+			out.addString("hdr", "max");
+			out.addFormula("pc", String.format("=MAX(R8C:R%dC)", end));
+			out.addFormula("pc", String.format("=MAX(R8C:R%dC)", end));
+			out.endRow();
+			out.beginRow();
+			out.skipCells(23);
+			out.addString("hdr", "mean");
+			out.addFormula("pc", String.format("=AVERAGE(R8C:R%dC)", end));
+			out.addFormula("pc", String.format("=AVERAGE(R8C:R%dC)", end));
+			out.endRow();
 			
 			out.endSheet();
 			

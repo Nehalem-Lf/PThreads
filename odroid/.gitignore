@@ -11,4 +11,5 @@ amd/
 bal/
 gus/
 guspar/
-results/
+res*/
+data*/

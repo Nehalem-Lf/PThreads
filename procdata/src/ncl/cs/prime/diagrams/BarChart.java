@@ -151,7 +151,7 @@ public class BarChart {
 		
 		// Grid
 		// out.printf("<g stroke-dasharray=\"1, 2\" stroke=\"#000000\" stroke-width=\"0.5\">\n");
-		out.printf("<g stroke=\"#000000\" stroke-width=\"0.25\">\n");
+		out.printf("<g stroke=\"#999999\" stroke-width=\"0.25\">\n");
 		out.printf("\t<line x1=\"%d\" y1=\"-%d\" x2=\"%d\" y2=\"0\"/>\n", len*gridx, areaHeight, len*gridx);
 		ty = -gridy;
 		for(double y=nexty(min); y<=max; y=nexty(y)) {

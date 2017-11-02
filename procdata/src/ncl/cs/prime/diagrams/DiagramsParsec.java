@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 
 public class DiagramsParsec {
 
-	public static final String PATH = "../odroid/results";
+	public static final String PATH = "../odroid/data_parsec3/results";
 	public static final String[] MODES = {"bodytrack", "ferret", "fluidanimate"};
 	public static final double MAX = 10.0;
 	public static final double STEP = 2.0;
@@ -16,15 +16,15 @@ public class DiagramsParsec {
 		Data d = new Data(data, new Data.Filter() {
 				@Override
 				public boolean accept(Data.Row row) {
-					return row.getInt("a7")>0 && row.getInt("a15")>0 && row.get("app").equals(mode);
+					return row.getInt("n7")>0 && row.getInt("n15")>0 && row.get("app").equals(mode);
 				}
 			});
 		BarChart ch = new BarChart(mode, d)
-			.setXAxisLabels("A7:a7", "A15:a15")
+			.setXAxisLabels("A7:n7", "A15:n15")
 			.setBars("low:SP_min", "measured:SP_meas", "high:SP_max")
 			.setBarColors(0, 2, 1)
 			.setRange(0.0, max, step)
-			.setLabelBar(1, "s_minmax");
+			.setLabelBar(1, "q_minmax");
 		return ch;
 	}
 	
@@ -40,7 +40,7 @@ public class DiagramsParsec {
 			}
 			
 			out = BarChart.startSvg(String.format("%s/parsec.svg", PATH));
-			BarChart.layoutCharts(out, charts, 0);
+			BarChart.layoutCharts(out, charts, 1);
 			BarChart.finishSvg(out);
 		}
 		catch(IOException e) {

@@ -31,7 +31,7 @@ public class CollectTimes {
 		public MeanPower calcPower(String path) {
 			if(power==null) {
 				try {
-					power = new MeanPower(String.format("%s/meters%d_%.1f_%s.csv", path, m, p, c), 1500, total-200);
+					power = new MeanPower(String.format("%s/meters%d_%.1f_%s.csv", path, m, p, c), 2500, total-1200);
 				}
 				catch (IOException e) {
 					e.printStackTrace();

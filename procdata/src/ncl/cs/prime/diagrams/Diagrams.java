@@ -8,7 +8,7 @@ import ncl.cs.prime.diagrams.Data.Row;
 
 public class Diagrams {
 
-	public static final String PATH = "../odroid/results";
+	public static final String PATH = "../odroid/data7b_171025a/results";
 	public static final String[] LAWS = {"amd", "bal", "gus", "guspar"};
 	public static final String[] MODES = {"sqrt", "int", "log"};
 	public static final double[][][] SP_RANGES = {
@@ -25,7 +25,7 @@ public class Diagrams {
 		};
 	public static final double[][][] EDP_RANGES = {
 			{{2000, 200}, {2000, 200}},
-			{{2000, 200}, {2000 /*1400*/, 200}},
+			{{2000, 200}, {1400, 200}},
 		};
 	
 	public static boolean speedup = false;
