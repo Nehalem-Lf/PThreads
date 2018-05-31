@@ -25,7 +25,7 @@ public class Diagrams {
 		};
 	public static final double[][][] EDP_RANGES = {
 			{{2000, 200}, {2000, 200}},
-			{{2000, 200}, {1400, 200}},
+			{{2000, 200}, {2000, 200}},
 		};
 	
 	public static boolean speedup = false;

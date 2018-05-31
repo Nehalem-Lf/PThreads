@@ -33,14 +33,14 @@ public class DiagramsParsec {
 			// Speedup - load balancing diagrams
 			BarChart[] charts = new BarChart[MODES.length];
 			
-			Data data = new Data(String.format("%s/parsec.csv", PATH));
+			Data data = new Data(String.format("%s/parsec_short.csv", PATH));
 			for(int m=0; m<MODES.length; m++) {
 				String mode = MODES[m];
 				charts[m] = createParsecChart(data, mode, MAX, STEP);
 			}
 			
-			out = BarChart.startSvg(String.format("%s/parsec.svg", PATH));
-			BarChart.layoutCharts(out, charts, 1);
+			out = BarChart.startSvg(String.format("%s/parsec_short.svg", PATH));
+			BarChart.layoutCharts(out, charts, 0);
 			BarChart.finishSvg(out);
 		}
 		catch(IOException e) {

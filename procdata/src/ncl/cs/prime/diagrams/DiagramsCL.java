@@ -24,7 +24,7 @@ public class DiagramsCL {
 
 	public static boolean speedup = true;
 	public static boolean balCompare = true;
-	public static boolean gusCompare = true;
+	public static boolean gusCompare = false;
 	
 	private static class Diff implements Formula {
 		public final String cola, colb;

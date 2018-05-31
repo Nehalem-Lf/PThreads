@@ -11,7 +11,8 @@ import java.io.PrintWriter;
 public class BarChart {
 
 //	public static final String[] palette = {"#ff420e", "#004586", "#9999ff", "#ffd320", "#399d1c", "#7e0021", "#83caff"};
-	public static final String[] palette = {"#ff6633", "#225588", "#bbbbff", "#ffdd22", "#44aa22", "#770022", "#77bbff"};
+// 	public static final String[] palette = {"#ff6633", "#225588", "#bbbbff", "#ffdd22", "#44aa22", "#770022", "#77bbff"};
+ 	public static final String[] palette = {"#ff7755", "#224466", "#ccddff", "#ffee77", "#228822", "#660000", "#99ddff"};
 	
 	public static final int defPivotX = 100;
 	public static final int defPivotY = 300;
